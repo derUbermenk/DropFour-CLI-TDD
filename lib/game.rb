@@ -20,7 +20,7 @@ class Game
 
   def turn_order
     curr_player = @player_que.shift
-    @board.update(curr_player.place_piece) # place piece returns array [piece, column]
+    @board.update(curr_player.piece, curr_player.choose_column)
     @player_que << curr_player
   end
 
@@ -31,13 +31,13 @@ class Game
 
   def end_cause
     if @board.winner
-      "Game over: #{winner(piece)} won"
+      "Game over: #{find_winner(@board.winner)} won"
     elsif @board.full?
       'Game over: Draw'
     end
   end
 
-  def winner(piece)
+  def find_winner(piece)
     case piece
     when @player1.piece then @player1.name
     when @player2.piece then @player2.name
