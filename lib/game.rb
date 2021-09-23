@@ -20,7 +20,7 @@ class Game
 
   def turn_order
     curr_player = @player_que.shift
-    @board.update(curr_player.piece, curr_player.choose_column)
+    @board.drop_piece(curr_player.piece, curr_player.choose_column)
     @player_que << curr_player
   end
 
