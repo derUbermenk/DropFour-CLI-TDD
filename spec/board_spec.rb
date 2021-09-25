@@ -78,6 +78,7 @@ describe Board do
 
 
         board.instance_variable_set(:@cells, winned_board)
+        board.instance_variable_set(:@last_drop, { piece: spade, row: 2, col: 3 })
       end
 
       it 'returns winning piece' do
@@ -105,6 +106,7 @@ describe Board do
         winned_board[3][1] = spade
 
         board.instance_variable_set(:@cells, winned_board)
+        board.instance_variable_set(:@last_drop, { piece: spade, row: 4, col: 1 })
       end
       it 'returns winning piece' do
         winning_piece = board.winner
@@ -131,6 +133,7 @@ describe Board do
         winned_board[2][0]
 
         board.instance_variable_set(:@cells, winned_board)
+        board.instance_variable_set(:@last_drop, { piece: spade, row: 1, col: 2 })
       end
 
       it 'returns winning piece' do
@@ -147,6 +150,7 @@ describe Board do
       before do
         matching_row = [nil, nil, piece, piece, piece, piece, nil]
         allow(board).to receive(:get_row_elements).and_return(matching_row)
+        allow(board).to receive(:create_pattern).and_return(Array.new(4, piece).join)
       end
       it 'returns true' do
         match_check = board.horizontal_match
@@ -158,7 +162,7 @@ describe Board do
       before do
         matching_row = [nil, nil, piece, nil, piece, piece, nil]
         allow(board).to receive(:get_row_elements).and_return(matching_row)
-        allow(board).to receive(:create_pattern).and_return(piece+piece+piece+piece)
+        allow(board).to receive(:create_pattern).and_return(Array.new(4, piece).join)
       end
 
       it 'returns false' do
@@ -294,14 +298,7 @@ describe Board do
         end
 
         it 'returns a size 2 array of arrays containing diagonal bisectors of cell[2][3]' do
-          #queried_diagonal_1 = board.send(:get_diagonal_elements, 2, 3, 1)
-          #queried_diagonal_2 = board.send(:get_diagonal_elements, 2, 3, -1)
-
-
-          #queried_diagonals = [queried_diagonal_1, queried_diagonal_2]
-          queried_diagonals = [1,-1].each_with_object([]) do |slope, diagonals|
-            diagonals << board.send(:get_diagonal_elements, 2, 3, slope)
-          end
+          queried_diagonals = board.send(:get_diagonal_elements, 2, 3)
 
           expect(queried_diagonals).to eql([diagonal1, diagonal2])
         end
@@ -319,9 +316,7 @@ describe Board do
           end
         end
         it 'returns a size 1 array of arrays containing diagonal bisector of cell[5][6]' do
-          queried_diagonals = [1,-1].each_with_object([]) do |slope, diagonals|
-            diagonals << board.send(:get_diagonal_elements, 5, 6, slope)
-          end
+          queried_diagonals = board.send(:get_diagonal_elements, 5, 6)
           expect(queried_diagonals).to eql([diagonal1])
         end
       end

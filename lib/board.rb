@@ -41,10 +41,9 @@ class Board
 
   def diagonal_match
     piece_pattern = create_pattern(@last_drop[:piece])
-    diagonal1 = get_diagonal_elements(@last_drop[:row], @last_drop[:col], 1)
-    diagonal2 = get_diagonal_elements(@last_drop[:row], @last_drop[:col], -1)
+    diagonals = get_diagonal_elements(@last_drop[:row], @last_drop[:column])
 
-    [diagonal1, diagonal2].inject(false) do |has_match, diagonal|
+    diagonals.inject(false) do |has_match, diagonal|
       has_match || diagonal.join.match?(piece_pattern)
     end
   end
@@ -66,7 +65,7 @@ class Board
   end
 
   # returns all elements of cells in given row
-  def get_row_elements(row) 
+  def get_row_elements(row)
     @cells[row]
   end
 
@@ -77,17 +76,23 @@ class Board
     end
   end
 
-  # returns the elements in the diagonal passing through 
+  # returns the elements in the diagonal passing through
   # cell index by row column combo
   # @param row [Integer]
   # @param column [Integer]
   # @param slope can either be 1 -- pointing to origin or
   # ... -1 pointing away from origin [0][0]
-  # @return [Array] an array of elements contained by queried diagonal
-  def get_diagonal_elements(row, column, slope)
-    get_points(column, row, slope).each_with_object([]) do |point, elements|
-      elements << @cells[point[1]][point[0]]
+  # @return [Array] an array of array of elements contained by queried diagonals
+  def get_diagonal_elements(row, column)
+    queried_diagonals = [1,-1].each_with_object([]) do |slope, diagonals|
+      diagonal = get_points(column, row, slope).each_with_object([]) do |point, elements|
+        elements << @cells[point[1]][point[0]]
+      end
+
+      diagonals << diagonal
     end
+
+    queried_diagonals.reject {|diagonal| diagonal.size == 1 }
   end
 
   # given points x and y, find all points in a line
@@ -100,8 +105,8 @@ class Board
   # @return [Array] an Array containing all [x,y] value pairs
   def get_points(x_point, y_point, slope, x_bound = 6, y_bound = 5)
     y_int = y_intercept(x_point, y_point, slope)
-    x_values = [*0..6]
-    possible_y = [*0..5]
+    x_values = [*0..x_bound]
+    possible_y = [*0..y_bound]
 
     x_values.each_with_object([]) do |x, points|
       y = (slope*x) + y_int
