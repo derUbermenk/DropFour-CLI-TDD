@@ -3,6 +3,10 @@
 require_relative '../lib/board'
 
 describe Board do
+  let(:space) { ' ' }
+  let(:diamond) { "\u2663" }
+  let(:heart) { "\u2660" }
+
   describe '#initialize' do
     subject(:board) { described_class.new }
     matcher :be_of_size_7 do
@@ -16,20 +20,18 @@ describe Board do
 
     it 'creates rows with 7 nil positions' do
       cells = board.instance_variable_get(:@cells)
-      expect(cells).to all(be_of_size_7. and include(nil).exactly(7).times)
+      expect(cells).to all(be_of_size_7. and include(space).exactly(7).times)
     end
   end
 
   describe '#drop_piece' do
-    let(:piece) { "\u2660" }
-
     context 'when placing on an empty column' do
       context 'when placing on column 2' do
         subject(:board) { described_class.new }
         let(:cells) { board.instance_variable_get(:@cells) }
 
         it 'places piece on column 2 of row 6' do
-          expect { board.drop_piece(piece, 2) }.to change { cells[5][2] }.to(piece)
+          expect { board.drop_piece(diamond, 2) }.to change { cells[5][2] }.to(diamond)
         end
       end
     end
@@ -41,14 +43,14 @@ describe Board do
 
         before do
           semi_filled_board = Array.new(6) do |index|
-            index >= 2 ? Array.new(7, piece) : Array.new(7, nil)
+            index >= 2 ? Array.new(7, diamond) : Array.new(7, space)
           end
 
           board.instance_variable_set(:@cells, semi_filled_board)
         end
 
         it 'places piece on column 5 of row 1' do
-          expect { board.drop_piece(piece, 5) }.to change { cells[1][5] }.to(piece)
+          expect { board.drop_piece(diamond, 5) }.to change { cells[1][5] }.to(diamond)
         end
       end
     end
@@ -68,8 +70,7 @@ describe Board do
     context 'when some columns 0, 3, 4 are full' do
       let(:unfilled_columns) { [1, 2, 5, 6] }
       before do
-        spade = "\u2660"
-        simulated_filled_column = Array.new(7) {|idx| spade if [0,3,4].include? idx }
+        simulated_filled_column = Array.new(7) {|idx| [0,3,4].include?(idx) ? diamond : space }
 
         cells = board.instance_variable_get(:@cells)
         cells[0] = simulated_filled_column
@@ -85,34 +86,32 @@ describe Board do
 
   describe '#winner' do 
     subject(:board) { described_class.new }
-    let(:spade) { "\u2660" }
-    let(:diamond) { "\u2666" }
     context 'when winning piece forms a horizontal line' do
       before do
 
         # create some board
         winned_board = Array.new(6) do |index|
-          index >= 1 ? Array.new(7, diamond) : Array.new(7, nil)
+          index >= 1 ? Array.new(7, diamond) : Array.new(7, space)
         end
 
         # edit board for a winning condition
-        winned_board[2][2] = spade
-        winned_board[2][3] = spade
-        winned_board[2][4] = spade
-        winned_board[2][5] = spade
+        winned_board[2][2] = heart
+        winned_board[2][3] = heart
+        winned_board[2][4] = heart
+        winned_board[2][5] = heart
 
-        # for some variety added some spades too
-        winned_board[3][5] = spade
-        winned_board[1][2] = spade
+        # for some variety added some hearts too
+        winned_board[3][5] = heart
+        winned_board[1][2] = heart
 
 
         board.instance_variable_set(:@cells, winned_board)
-        board.instance_variable_set(:@last_drop, { piece: spade, row: 2, col: 3 })
+        board.instance_variable_set(:@last_drop, { piece: heart, row: 2, col: 3 })
       end
 
       it 'returns winning piece' do
         winning_piece = board.winner
-        expect(winning_piece).to eql(spade)
+        expect(winning_piece).to eql(heart)
       end
     end
 
@@ -121,25 +120,25 @@ describe Board do
         # let winning piece be spade
         # create a condition where spade forms a vertical line
         winned_board = Array.new(6) do |index|
-          index >= 1 ? Array.new(7, diamond) : Array.new(7, nil)
+          index >= 1 ? Array.new(7, diamond) : Array.new(7, space)
         end
 
         # create the winning line
-        winned_board[2][1] = spade
-        winned_board[3][1] = spade
-        winned_board[4][1] = spade
-        winned_board[5][1] = spade
+        winned_board[2][1] = heart
+        winned_board[3][1] = heart
+        winned_board[4][1] = heart
+        winned_board[5][1] = heart
 
-        # add some other spades for variety
-        winned_board[2][2] = spade
-        winned_board[3][1] = spade
+        # add some other hearts for variety
+        winned_board[2][2] = heart
+        winned_board[3][1] = heart
 
         board.instance_variable_set(:@cells, winned_board)
-        board.instance_variable_set(:@last_drop, { piece: spade, row: 4, col: 1 })
+        board.instance_variable_set(:@last_drop, { piece: heart, row: 4, col: 1 })
       end
       it 'returns winning piece' do
         winning_piece = board.winner
-        expect(winning_piece).to eql(spade)
+        expect(winning_piece).to eql(heart)
       end
     end
 
@@ -148,29 +147,38 @@ describe Board do
         # let winnning piece be diamond
         # create a condition where spade forms a horizontal line
         winned_board = Array.new(6) do |index|
-          index >= 1 ? Array.new(7, diamond) : Array.new(7, nil)
+          index >= 1 ? Array.new(7, diamond) : Array.new(7, space)
         end
 
         # create the diagonal line
-        winned_board[0][3]
-        winned_board[1][2]
-        winned_board[2][1]
-        winned_board[3][0]
+        winned_board[0][3] = heart
+        winned_board[1][2] = heart
+        winned_board[2][1] = heart
+        winned_board[3][0] = heart
 
-        # add other spades for variety
-        winned_board[0][1]
-        winned_board[2][0]
+        # add other heart for variety
+        winned_board[0][1] = heart
+        winned_board[2][0] = heart
 
         board.instance_variable_set(:@cells, winned_board)
+        board.instance_variable_set(:@last_drop, {piece: heart, row: 3, col: 0 })
       end
 
       it 'returns winning piece' do
         winning_piece = board.winner
-        expect(winning_piece).to eql(spade)
+        expect(winning_piece).to eql(heart)
       end
     end
 
-    context 'when there is no winning condition has been achieved' do
+    context 'when the winning condition has not been achieved' do
+      before do
+        cells = board.instance_variable_get(:@cells)
+        last_drop = { piece: heart, row: 5, col: 3 }
+        cells[5][3] = last_drop[:piece]
+
+        board.instance_variable_set(:@cells, cells)
+        board.instance_variable_set(:@last_drop, last_drop)
+      end
       it 'returns nil' do
         winning_piece = board.winner
         expect(winning_piece).to be_nil
@@ -184,7 +192,7 @@ describe Board do
     context 'when there is match' do
       before do
         board.instance_variable_set(:@last_drop, { piece: piece, row: nil, column: nil} )
-        matching_row = [nil, nil, piece, piece, piece, piece, nil]
+        matching_row = [space, space, piece, piece, piece, piece, space]
         allow(board).to receive(:get_row_elements).and_return(matching_row)
         allow(board).to receive(:create_pattern).and_return(Array.new(4, piece).join)
       end
@@ -196,7 +204,7 @@ describe Board do
 
     context 'when there is no match' do
       before do
-        matching_row = [nil, nil, piece, nil, piece, piece, nil]
+        matching_row = [space, space, piece, space, piece, piece, space]
         allow(board).to receive(:get_row_elements).and_return(matching_row)
         allow(board).to receive(:create_pattern).and_return(Array.new(4, piece).join)
       end
@@ -206,10 +214,27 @@ describe Board do
         expect(match_check).to be false
       end
     end
+
+    context 'when there is only one element in the board' do
+      before do
+        cells = board.instance_variable_get(:@cells)
+        last_drop = { piece: heart, row: 5, col: 3 }
+        cells[5][3] = last_drop[:piece]
+
+        board.instance_variable_set(:@cells, cells)
+        board.instance_variable_set(:@last_drop, last_drop)
+      end
+
+      it 'returns false' do
+        expected_return = board.horizontal_match 
+        expect(expected_return).to be false
+      end
+    end
   end
 
   # if horizontal match works then so does vertical match
   describe '#vertical_match' do
+    subject(:board) { described_class.new }
     context 'when there is no match' do
       it 'returns false' do
       end
@@ -217,12 +242,29 @@ describe Board do
 
     context 'when there is match' do
       it 'returns true' do
+      end
+    end
+
+    context 'when there is only one element in the board' do
+      before do
+        cells = board.instance_variable_get(:@cells)
+        last_drop = { piece: heart, row: 5, col: 3 }
+        cells[5][3] = last_drop[:piece]
+
+        board.instance_variable_set(:@cells, cells)
+        board.instance_variable_set(:@last_drop, last_drop)
+      end
+
+      it 'returns false' do
+        expected_return = board.vertical_match
+        expect(expected_return).to be false
       end
     end
   end
 
   # if horizontal match works then so does vertical match
   describe 'diagonal_match' do
+    subject(:board) { described_class.new }
     context 'when there is no match' do
       it 'returns false' do
       end
@@ -230,6 +272,22 @@ describe Board do
 
     context 'when there is match' do
       it 'returns true' do
+      end
+    end
+
+    context 'when there is only one element in the board' do
+      before do
+        cells = board.instance_variable_get(:@cells)
+        last_drop = { piece: heart, row: 5, col: 3 }
+        cells[5][3] = last_drop[:piece]
+
+        board.instance_variable_set(:@cells, cells)
+        board.instance_variable_set(:@last_drop, last_drop)
+      end
+
+      it 'returns false' do
+        expected_return = board.diagonal_match
+        expect(expected_return).to be false
       end
     end
   end
@@ -255,7 +313,7 @@ describe Board do
 
       before do
         semi_filled_board = Array.new(6) do |index|
-          index >= 2 ? Array.new(7, piece) : Array.new(7, nil)
+          index >= 2 ? Array.new(7, piece) : Array.new(7, space)
         end
 
         board.instance_variable_set(:@cells, semi_filled_board)

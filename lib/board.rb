@@ -3,7 +3,7 @@
 # Contains dropped pieces by a player object
 class Board
   def initialize
-    @cells = Array.new(6) { Array.new(7, nil) }
+    @cells = Array.new(6) { Array.new(7, ' ') }
 
     # this contains the position of the last drop
     @last_drop = { piece: nil, row: nil, col: nil}
@@ -11,7 +11,7 @@ class Board
 
   def drop_piece(piece, column, row = 5)
     curr_cell = @cells[row][column]
-    if curr_cell.nil?
+    if curr_cell.eql?(' ')
       @cells[row][column] = piece
       @last_drop = { piece: piece, row: row, col: column }
     else
@@ -34,7 +34,7 @@ class Board
   # returns indexes of columns that are yet to be filled
   def unfilled_columns
     @cells[0].each_with_object([]).with_index do |(cell, nonFull_columns), idx|
-      nonFull_columns << idx if cell.nil?
+      nonFull_columns << idx if cell.eql?(' ')
     end
   end
   def horizontal_match
@@ -44,13 +44,13 @@ class Board
 
   def vertical_match
     return false if @last_drop[:piece].nil?
-    get_row_elements(@last_drop[:col]).join
+    get_column_elements(@last_drop[:col]).join.match?(create_pattern(@last_drop[:piece]))
   end
 
   def diagonal_match
     return false if @last_drop[:piece].nil?
     piece_pattern = create_pattern(@last_drop[:piece])
-    diagonals = get_diagonal_elements(@last_drop[:row], @last_drop[:column])
+    diagonals = get_diagonal_elements(@last_drop[:row], @last_drop[:col])
 
     diagonals.inject(false) do |has_match, diagonal|
       has_match || diagonal.join.match?(piece_pattern)
@@ -59,7 +59,7 @@ class Board
 
   # checks if board is full
   def full?
-    @cells.map { |row| !row.all?(&:nil?) }.all?(true)
+    @cells.map { |row| !row.all? {|cell| cell.eql?(' ') } }.all?(true)
   end
 
   def display
