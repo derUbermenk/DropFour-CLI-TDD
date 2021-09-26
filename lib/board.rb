@@ -6,7 +6,7 @@ class Board
     @cells = Array.new(6) { Array.new(7, nil) }
 
     # this contains the position of the last drop
-    @last_drop = { piece: nil, row: nil, col: nil }
+    @last_drop = { piece: nil, row: nil, col: nil}
   end
 
   def drop_piece(piece, column, row = 5)
@@ -31,15 +31,24 @@ class Board
     match ? @last_drop[:piece] : nil
   end
 
+  # returns indexes of columns that are yet to be filled
+  def unfilled_columns
+    @cells[0].each_with_object([]).with_index do |(cell, nonFull_columns), idx|
+      nonFull_columns << idx if cell.nil?
+    end
+  end
   def horizontal_match
+    return false if @last_drop[:piece].nil?
     get_row_elements(@last_drop[:row]).join.match?(create_pattern(@last_drop[:piece]))
   end
 
   def vertical_match
+    return false if @last_drop[:piece].nil?
     get_row_elements(@last_drop[:col]).join
   end
 
   def diagonal_match
+    return false if @last_drop[:piece].nil?
     piece_pattern = create_pattern(@last_drop[:piece])
     diagonals = get_diagonal_elements(@last_drop[:row], @last_drop[:column])
 
@@ -53,7 +62,18 @@ class Board
     @cells.map { |row| !row.all?(&:nil?) }.all?(true)
   end
 
-  def display; end
+  def display
+    # upperrow [*0..7]
+    # for each row, join with | if nil, replace with space
+    # then join upperrow to lower row with \n
+    upper_row = [*0..6].join(" | ")
+    rows = [upper_row]
+    @cells.each_with_object(rows) do |row|
+      rows << row.map { |element| element.nil? ? ' ' : element }.join(' | ')
+    end
+
+    puts rows.join("\n")
+  end
 
   private
 

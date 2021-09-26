@@ -54,6 +54,35 @@ describe Board do
     end
   end
 
+  describe '#unfilled_columns' do
+    subject(:board) { described_class.new }
+    context 'when all columns are not yet full' do
+      let(:unfilled_columns) { [*0..6] }
+
+      it "returns an array containing the unfilled columns (#{[*0..6]})" do
+        return_columns = board.unfilled_columns
+        expect(return_columns).to eql(unfilled_columns)
+      end
+    end
+
+    context 'when some columns 0, 3, 4 are full' do
+      let(:unfilled_columns) { [1, 2, 5, 6] }
+      before do
+        spade = "\u2660"
+        simulated_filled_column = Array.new(7) {|idx| spade if [0,3,4].include? idx }
+
+        cells = board.instance_variable_get(:@cells)
+        cells[0] = simulated_filled_column
+
+        cells = board.instance_variable_set(:@cells, cells)
+      end
+      it "returns an array containing the indexes of unfilled columns (#{[1, 2, 5, 6]}) " do
+        return_columns = board.unfilled_columns
+        expect(return_columns).to eql(unfilled_columns)
+      end
+    end
+  end
+
   describe '#winner' do 
     subject(:board) { described_class.new }
     let(:spade) { "\u2660" }
@@ -133,12 +162,18 @@ describe Board do
         winned_board[2][0]
 
         board.instance_variable_set(:@cells, winned_board)
-        board.instance_variable_set(:@last_drop, { piece: spade, row: 1, col: 2 })
       end
 
       it 'returns winning piece' do
         winning_piece = board.winner
         expect(winning_piece).to eql(spade)
+      end
+    end
+
+    context 'when there is no winning condition has been achieved' do
+      it 'returns nil' do
+        winning_piece = board.winner
+        expect(winning_piece).to be_nil
       end
     end
   end
@@ -148,6 +183,7 @@ describe Board do
     let(:piece) {"\u2660"}
     context 'when there is match' do
       before do
+        board.instance_variable_set(:@last_drop, { piece: piece, row: nil, column: nil} )
         matching_row = [nil, nil, piece, piece, piece, piece, nil]
         allow(board).to receive(:get_row_elements).and_return(matching_row)
         allow(board).to receive(:create_pattern).and_return(Array.new(4, piece).join)

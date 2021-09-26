@@ -14,20 +14,20 @@ describe Game do
       subject(:game) { described_class.new }
 
       before do
-        allow(instance_double(Board)).to receive(:update)
+        allow_any_instance_of(Player).to receive(:choose_column).and_return(2)
       end
 
       it 'reverses player que when called' do
-        player1 = game.instance_variable_get(:@player1)
-        player2 = game.instance_variable_get(:@player2)
-        reversed_que = [player2, player1]
-        expect { game.turn_order }.to change { game.instance_variable_get(:@player_que) }.to(reversed_que)
+        rotated_que = game.instance_variable_get(:@player_que).rotate
+        expect { game.turn_order }.to change { game.instance_variable_get(:@player_que) }.to(rotated_que)
       end
     end
 
     it 'updates board based on where player drops piece' do
       # test board function for updating
     end
+
+    it 'shows board' do; end
   end
 
   describe '#end_game?' do
@@ -62,12 +62,13 @@ describe Game do
     end
 
     context 'when end game was due to full board' do
-      let(:board) { double('Board', full?: true) }
+      let(:board) { double('Board') }
       subject(:game) { described_class.new }
 
       before do
-        board = game.instance_variable_get(:@board)
+        allow(board).to receive(:winner).and_return(nil)
         allow(board).to receive(:full?).and_return(true)
+        game.instance_variable_set(:@board, board)
       end
 
       it 'reports that the board was full' do

@@ -19,10 +19,12 @@ class Game
   end
 
   def turn_order
-    curr_player = @player_que.shift
-    @board.drop_piece(curr_player.piece, curr_player.choose_column)
-    @player_que << curr_player
-  end
+    curr_player = @player_que.first
+    @board.drop_piece(curr_player.piece, 
+                      curr_player.choose_column(@board.unfilled_columns))
+    @player_que.rotate!
+    @board.display
+ end
 
   def end_game?
     # board.winner returns nil if none
@@ -44,3 +46,10 @@ class Game
     end
   end
 end
+
+def main
+  game = Game.new
+  game.play
+end
+
+main
