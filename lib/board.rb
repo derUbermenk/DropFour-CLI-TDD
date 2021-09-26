@@ -59,7 +59,7 @@ class Board
 
   # checks if board is full
   def full?
-    @cells.map { |row| !row.all? {|cell| cell.eql?(' ') } }.all?(true)
+    @cells.map { |row| row.all? {|cell| !cell.eql?(' ') } }.all?(true)
   end
 
   def display
